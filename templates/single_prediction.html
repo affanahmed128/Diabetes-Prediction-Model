@@ -1,1 +1,173 @@
-<h1>Person is: {{result}}</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assessment Result | DiaPulse AI</title>
+  
+  <!-- Modern Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Top Navigation -->
+    <header class="header-nav">
+      <a href="{{ url_for('index') }}" class="brand-wrapper">
+        <div class="brand-icon-box">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+        </div>
+        <div class="brand-titles">
+          <h1>DiaPulse AI</h1>
+          <p>Clinical Diagnostic Assessment</p>
+        </div>
+      </a>
+
+      <a href="{{ url_for('index') }}" class="btn-secondary" style="padding: 0.4rem 0.85rem; font-size: 0.8rem;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="m15 18-6-6 6-6"/>
+        </svg>
+        Back to Predictor
+      </a>
+    </header>
+
+    <!-- Standalone Result Card -->
+    <main class="standalone-result-page">
+      <div class="diagnostic-card show {% if is_diabetic %}status-danger{% else %}status-safe{% endif %}">
+        
+        <div class="gauge-section">
+          <!-- Circular Probability Gauge -->
+          <div class="circular-gauge">
+            <svg viewBox="0 0 160 160">
+              <circle class="gauge-bg" cx="80" cy="80" r="65" />
+              <!-- Circumference = 408.4; Offset = 408.4 - (prob / 100) * 408.4 -->
+              {% set prob = probability|default(75.0)|float %}
+              {% set offset = 408.4 - (prob / 100.0) * 408.4 %}
+              <circle class="gauge-bar" cx="80" cy="80" r="65" 
+                      stroke="{% if is_diabetic %}#f43f5e{% else %}#10b981{% endif %}"
+                      stroke-dasharray="408.4" 
+                      stroke-dashoffset="{{ offset }}" />
+            </svg>
+            <div class="gauge-content">
+              <span class="gauge-val">{{ probability }}%</span>
+              <span class="gauge-label">Model Confidence</span>
+            </div>
+          </div>
+
+          <!-- Result Classification Badge -->
+          <div class="result-badge {% if is_diabetic %}badge-danger{% else %}badge-safe{% endif %}">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              {% if is_diabetic %}
+                <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+              {% else %}
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+              {% endif %}
+            </svg>
+            <span>Person is: {{ result }}</span>
+          </div>
+
+          <p class="result-summary-text">
+            {{ risk_level|default('Clinical Assessment Evaluated') }} &bull; Sigmoid Probability: {{ probability }}%
+          </p>
+        </div>
+
+        <!-- Biomarkers Recap -->
+        {% if patient_data %}
+        <div class="risk-factors-card">
+          <div class="card-heading">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+            Patient Biomarker Profile
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.6rem; font-size: 0.82rem;">
+            {% for key, val in patient_data.items() %}
+            <div style="background: rgba(255,255,255,0.03); padding: 0.45rem 0.65rem; border-radius: 6px; display: flex; justify-content: space-between;">
+              <span style="color: var(--text-secondary);">{{ key }}</span>
+              <strong style="color: var(--text-primary);">{{ val }}</strong>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Risk Factors Evaluated -->
+        {% if risk_factors %}
+        <div class="risk-factors-card">
+          <div class="card-heading">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            Biomarker Range Analysis
+          </div>
+          <ul class="factors-list">
+            {% for factor in risk_factors %}
+            <li class="factor-item {% if 'Critical' in factor.status or 'High' in factor.status or 'Obese' in factor.status %}flagged{% endif %}">
+              <span class="factor-name">{{ factor.name }}</span>
+              <span class="factor-val">{{ factor.value }} &bull; {{ factor.status }}</span>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+        <!-- Clinical Guidance -->
+        {% if recommendations %}
+        <div class="recommendations-card">
+          <div class="card-heading">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--status-safe)" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            Clinical Guidance &amp; Action Plan
+          </div>
+          <ul class="tips-list">
+            {% for rec in recommendations %}
+            <li class="tip-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              <span>{{ rec }}</span>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+        <!-- Actions -->
+        <div class="diagnostic-actions" style="margin-top: 1.5rem;">
+          <a href="{{ url_for('index') }}" class="btn-predict" style="text-decoration: none; flex: 1.2;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="m15 18-6-6 6-6"/>
+            </svg>
+            <span>Analyze Another Patient</span>
+          </a>
+          <button type="button" onclick="window.print()" class="btn-secondary" style="flex: 0.8;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 6 2 18 2 18 9"/>
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+              <rect width="12" height="8" x="6" y="14"/>
+            </svg>
+            Print Report
+          </button>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>DiaPulse AI Clinical Diagnostic Support &bull; Deployed on AWS Elastic Beanstalk</p>
+    </footer>
+  </div>
+
+</body>
+</html>

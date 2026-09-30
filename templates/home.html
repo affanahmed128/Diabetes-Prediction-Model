@@ -1,35 +1,512 @@
 <!DOCTYPE html>
-<html >
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>ML API</title>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DiaPulse AI | Next-Gen Diabetes Risk Intelligence</title>
+  <meta name="description" content="AI-powered diabetes prediction and metabolic risk assessment dashboard using clinical biomarkers and Logistic Regression.">
+  
+  <!-- Modern Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-
-<body>
- <div class="login">
-	<h1>Diabetes Prediction</h1>
-    <form action="{{ url_for('predict_datapoint')}}" method="post">
-      <input type="text" name="Pregnancies" placeholder="Pregnancies" required="required" /><br>
-    	<input type="text" name="Glucose" placeholder="Glucose" required="required" /><br>
-        <input type="text" name="BloodPressure" placeholder="BloodPressure" required="required" /><br>
-        <input type="text" name="SkinThickness" placeholder="SkinThickness" required="required" /><br>
-        <input type="text" name="Insulin" placeholder="Insulin" required="required" /><br>
-        <input type="text" name="BMI" placeholder="BMI" required="required" /><br>
-        <input type="text" name="DiabetesPedigreeFunction" placeholder="DiabetesPedigreeFunction" required="required" /><br>
-        <input type="text" name="Age" placeholder="Age" required="required" /><br>
-
-
-        <button type="submit" class="btn btn-primary btn-block btn-large">Predict</button>
-    </form>
 <body>
 
-   <br>
-   <br>
+  <div class="app-container">
+    <!-- Top Navigation Bar -->
+    <header class="header-nav">
+      <a href="{{ url_for('index') }}" class="brand-wrapper">
+        <div class="brand-icon-box">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+        </div>
+        <div class="brand-titles">
+          <h1>DiaPulse AI</h1>
+          <p>Metabolic Intelligence &bull; AWS Beanstalk</p>
+        </div>
+      </a>
 
+      <div class="header-badges">
+        <span class="pill-badge active-pulse">Model Online</span>
+        <span class="pill-badge">Pima Indians Dataset</span>
+      </div>
+    </header>
 
- </div>
- {{result}}
+    <!-- Hero Banner -->
+    <section class="hero-banner">
+      <div class="hero-tag">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="m9 12 2 2 4-4"/>
+        </svg>
+        Clinical-Grade Predictive ML
+      </div>
+      <h2 class="hero-title">
+        Intelligent <span class="gradient-text">Diabetes Risk</span> Assessment
+      </h2>
+      <p class="hero-subtitle">
+        Evaluate patient metabolic risk in real-time. Adjust clinical biomarkers using interactive sliders or test with realistic synthetic medical profiles.
+      </p>
+    </section>
 
+    <!-- Quick Presets Toolbar -->
+    <section class="presets-card">
+      <div class="presets-label">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48 2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48 2.83-2.83"/>
+        </svg>
+        Quick Sample Profiles:
+      </div>
+      <div class="presets-group">
+        <button type="button" class="preset-btn preset-low" data-preset="healthy">
+          <span>🟢</span> Healthy Adult
+        </button>
+        <button type="button" class="preset-btn preset-mid" data-preset="borderline">
+          <span>🟡</span> Borderline / Pre-Diabetic
+        </button>
+        <button type="button" class="preset-btn preset-high" data-preset="high_risk">
+          <span>🔴</span> High Risk Case
+        </button>
+        <button type="button" class="preset-btn" data-preset="sample_dataset">
+          <span>📋</span> Dataset Sample
+        </button>
+        <button type="button" class="preset-btn" data-preset="reset">
+          <span>🔄</span> Reset
+        </button>
+      </div>
+    </section>
+
+    <!-- Main Diagnostic Grid -->
+    <div class="dashboard-grid">
+      
+      <!-- Biomarker Form Panel -->
+      <section class="glass-panel">
+        <div class="panel-header">
+          <div>
+            <h3 class="panel-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2.5">
+                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <line x1="10" y1="9" x2="8" y2="9"/>
+              </svg>
+              Patient Biomarkers
+            </h3>
+            <p class="panel-subtitle">Dual slider & numeric inputs with synchronized health thresholds</p>
+          </div>
+        </div>
+
+        <form id="prediction-form" action="{{ url_for('predict_datapoint') }}" method="POST">
+          <div class="biomarkers-grid">
+            
+            <!-- 1. Pregnancies -->
+            <div class="biomarker-card">
+              <div class="biomarker-top">
+                <div class="biomarker-meta">
+                  <div class="biomarker-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+                    </svg>
+                  </div>
+                  <div class="biomarker-title-group">
+                    <label for="input-Pregnancies">Pregnancies</label>
+                    <span class="biomarker-unit">Total count</span>
+                  </div>
+                </div>
+                <span id="tag-Pregnancies" class="biomarker-status-tag optimal">1-3 Typical</span>
+              </div>
+              <div class="input-control-wrap">
+                <div class="slider-wrap">
+                  <input type="range" class="biomarker-slider" id="slider-Pregnancies" min="0" max="17" step="1" value="1">
+                </div>
+                <input type="number" id="input-Pregnancies" name="Pregnancies" class="biomarker-number-input" min="0" max="17" step="1" value="1" required>
+              </div>
+              <div class="range-bounds">
+                <span>0</span>
+                <span>Max 17</span>
+              </div>
+            </div>
+
+            <!-- 2. Glucose -->
+            <div class="biomarker-card">
+              <div class="biomarker-top">
+                <div class="biomarker-meta">
+                  <div class="biomarker-icon" style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+                    </svg>
+                  </div>
+                  <div class="biomarker-title-group">
+                    <label for="input-Glucose">Plasma Glucose</label>
+                    <span class="biomarker-unit">mg/dL (Oral GTT)</span>
+                  </div>
+                </div>
+                <span id="tag-Glucose" class="biomarker-status-tag optimal">Optimal</span>
+              </div>
+              <div class="input-control-wrap">
+                <div class="slider-wrap">
+                  <input type="range" class="biomarker-slider" id="slider-Glucose" min="40" max="250" step="1" value="100">
+                </div>
+                <input type="number" id="input-Glucose" name="Glucose" class="biomarker-number-input" min="40" max="250" step="1" value="100" required>
+              </div>
+              <div class="range-bounds">
+                <span>40 (Hypo)</span>
+                <span>Normal &lt; 100</span>
+                <span>250</span>
+              </div>
+            </div>
+
+            <!-- 3. Blood Pressure -->
+            <div class="biomarker-card">
+              <div class="biomarker-top">
+                <div class="biomarker-meta">
+                  <div class="biomarker-icon" style="background: rgba(244, 63, 94, 0.15); color: #fb7185;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 7.65l.78.77L12 20.66l7.65-7.66.78-.77a5.4 5.4 0 0 0 0-7.65z"/>
+                    </svg>
+                  </div>
+                  <div class="biomarker-title-group">
+                    <label for="input-BloodPressure">Diastolic BP</label>
+                    <span class="biomarker-unit">mm Hg (Resting)</span>
+                  </div>
+                </div>
+                <span id="tag-BloodPressure" class="biomarker-status-tag optimal">Normal</span>
+              </div>
+              <div class="input-control-wrap">
+                <div class="slider-wrap">
+                  <input type="range" class="biomarker-slider" id="slider-BloodPressure" min="30" max="140" step="1" value="72">
+                </div>
+                <input type="number" id="input-BloodPressure" name="BloodPressure" class="biomarker-number-input" min="30" max="140" step="1" value="72" required>
+              </div>
+              <div class="range-bounds">
+                <span>30</span>
+                <span>Normal &lt; 80</span>
+                <span>140</span>
+              </div>
+            </div>
+
+            <!-- 4. Skin Thickness -->
+            <div class="biomarker-card">
+              <div class="biomarker-top">
+                <div class="biomarker-meta">
+                  <div class="biomarker-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z"/>
+                      <path d="m14.5 12.5 2-2"/>
+                      <path d="m11.5 9.5 2-2"/>
+                      <path d="m8.5 6.5 2-2"/>
+                    </svg>
+                  </div>
+                  <div class="biomarker-title-group">
+                    <label for="input-SkinThickness">Triceps Skin Fold</label>
+                    <span class="biomarker-unit">mm (Adiposity)</span>
+                  </div>
+                </div>
+                <span id="tag-SkinThickness" class="biomarker-status-tag optimal">Normal Fold</span>
+              </div>
+              <div class="input-control-wrap">
+                <div class="slider-wrap">
+                  <input type="range" class="biomarker-slider" id="slider-SkinThickness" min="0" max="99" step="1" value="20">
+                </div>
+                <input type="number" id="input-SkinThickness" name="SkinThickness" class="biomarker-number-input" min="0" max="99" step="1" value="20" required>
+              </div>
+              <div class="range-bounds">
+                <span>0 mm</span>
+                <span>Avg: 20-30</span>
+                <span>99 mm</span>
+              </div>
+            </div>
+
+            <!-- 5. Insulin -->
+            <div class="biomarker-card">
+              <div class="biomarker-top">
+                <div class="biomarker-meta">
+                  <div class="biomarker-icon" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/>
+                      <path d="m8.5 8.5 7 7"/>
+                    </svg>
+                  </div>
+                  <div class="biomarker-title-group">
+                    <label for="input-Insulin">Serum Insulin</label>
+                    <span class="biomarker-unit">&mu;U/mL (2h post-meal)</span>
+                  </div>
+                </div>
+                <span id="tag-Insulin" class="biomarker-status-tag optimal">Normal Fasting</span>
+              </div>
+              <div class="input-control-wrap">
+                <div class="slider-wrap">
+                  <input type="range" class="biomarker-slider" id="slider-Insulin" min="0" max="846" step="1" value="79">
+                </div>
+                <input type="number" id="input-Insulin" name="Insulin" class="biomarker-number-input" min="0" max="846" step="1" value="79" required>
+              </div>
+              <div class="range-bounds">
+                <span>0</span>
+                <span>16-166 &mu;U/mL</span>
+                <span>846</span>
+              </div>
+            </div>
+
+            <!-- 6. BMI -->
+            <div class="biomarker-card">
+              <div class="biomarker-top">
+                <div class="biomarker-meta">
+                  <div class="biomarker-icon" style="background: rgba(56, 189, 248, 0.15); color: var(--accent-sky);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"/>
+                      <path d="m4.93 4.93 4.24 4.24"/>
+                      <path d="m14.83 9.17 4.24-4.24"/>
+                      <path d="m14.83 14.83 4.24 4.24"/>
+                      <path d="m9.17 14.83-4.24 4.24"/>
+                    </svg>
+                  </div>
+                  <div class="biomarker-title-group">
+                    <label for="input-BMI">Body Mass Index</label>
+                    <span class="biomarker-unit">kg/m&sup2; (Weight / Height&sup2;)</span>
+                  </div>
+                </div>
+                <span id="tag-BMI" class="biomarker-status-tag optimal">Healthy</span>
+              </div>
+              <div class="input-control-wrap">
+                <div class="slider-wrap">
+                  <input type="range" class="biomarker-slider" id="slider-BMI" min="10" max="65" step="0.1" value="25.0">
+                </div>
+                <input type="number" id="input-BMI" name="BMI" class="biomarker-number-input" min="10" max="65" step="0.1" value="25.0" required>
+              </div>
+              <div class="range-bounds">
+                <span>18.5 (Normal)</span>
+                <span>25 (Overweight)</span>
+                <span>30+ (Obese)</span>
+              </div>
+            </div>
+
+            <!-- 7. Diabetes Pedigree Function -->
+            <div class="biomarker-card">
+              <div class="biomarker-top">
+                <div class="biomarker-meta">
+                  <div class="biomarker-icon" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="m8 3 4 8 5-5 5 15H2L8 3z"/>
+                    </svg>
+                  </div>
+                  <div class="biomarker-title-group">
+                    <label for="input-DiabetesPedigreeFunction">Pedigree Score</label>
+                    <span class="biomarker-unit">Genetic History</span>
+                  </div>
+                </div>
+                <span id="tag-DiabetesPedigreeFunction" class="biomarker-status-tag optimal">Low Genetic</span>
+              </div>
+              <div class="input-control-wrap">
+                <div class="slider-wrap">
+                  <input type="range" class="biomarker-slider" id="slider-DiabetesPedigreeFunction" min="0.05" max="2.50" step="0.01" value="0.35">
+                </div>
+                <input type="number" id="input-DiabetesPedigreeFunction" name="DiabetesPedigreeFunction" class="biomarker-number-input" min="0.05" max="2.50" step="0.01" value="0.35" required>
+              </div>
+              <div class="range-bounds">
+                <span>0.05 (Min)</span>
+                <span>0.37 (Median)</span>
+                <span>2.50</span>
+              </div>
+            </div>
+
+            <!-- 8. Age -->
+            <div class="biomarker-card">
+              <div class="biomarker-top">
+                <div class="biomarker-meta">
+                  <div class="biomarker-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"/>
+                      <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                  </div>
+                  <div class="biomarker-title-group">
+                    <label for="input-Age">Patient Age</label>
+                    <span class="biomarker-unit">Years</span>
+                  </div>
+                </div>
+                <span id="tag-Age" class="biomarker-status-tag optimal">Young Adult</span>
+              </div>
+              <div class="input-control-wrap">
+                <div class="slider-wrap">
+                  <input type="range" class="biomarker-slider" id="slider-Age" min="18" max="100" step="1" value="30">
+                </div>
+                <input type="number" id="input-Age" name="Age" class="biomarker-number-input" min="18" max="100" step="1" value="30" required>
+              </div>
+              <div class="range-bounds">
+                <span>18</span>
+                <span>35</span>
+                <span>100</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Submit Button -->
+          <div class="submit-area">
+            <button type="submit" id="submit-btn" class="btn-predict">
+              <span class="spinner"></span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48 2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48 2.83-2.83"/>
+              </svg>
+              <span class="btn-text">Run AI Diagnostic Analysis</span>
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Diagnostic Results Panel -->
+      <section id="result-panel" class="result-panel">
+        
+        <!-- Empty State Prompt -->
+        <div id="empty-state" class="empty-state">
+          <div class="empty-icon">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+          </div>
+          <h3>Awaiting Diagnostic Data</h3>
+          <p>Select a quick profile above or adjust the biomarker sliders, then click <strong>Run AI Diagnostic Analysis</strong> to view probability and risk factors.</p>
+        </div>
+
+        <!-- Active Diagnostic Card -->
+        <div id="diagnostic-card" class="diagnostic-card">
+          
+          <!-- Animated Circular Gauge -->
+          <div class="gauge-section">
+            <div class="circular-gauge">
+              <svg viewBox="0 0 160 160">
+                <circle class="gauge-bg" cx="80" cy="80" r="65" />
+                <circle id="gauge-bar" class="gauge-bar" cx="80" cy="80" r="65" stroke-dasharray="408.4" stroke-dashoffset="408.4" />
+              </svg>
+              <div class="gauge-content">
+                <span id="gauge-value" class="gauge-val">0.0%</span>
+                <span class="gauge-label">Diabetes Risk</span>
+              </div>
+            </div>
+
+            <!-- Dynamic Result Badge -->
+            <div id="result-badge" class="result-badge badge-safe">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+              <span>Non-Diabetic</span>
+            </div>
+
+            <p id="risk-level-text" class="result-summary-text">Low Metabolic Risk</p>
+          </div>
+
+          <!-- Contributing Biomarker Factors -->
+          <div class="risk-factors-card">
+            <div class="card-heading">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              Key Biomarker Evaluation
+            </div>
+            <ul id="factors-list" class="factors-list">
+              <!-- Dynamically populated -->
+            </ul>
+          </div>
+
+          <!-- AI Clinical Recommendations -->
+          <div class="recommendations-card">
+            <div class="card-heading">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--status-safe)" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+              Clinical Guidance &amp; Interventions
+            </div>
+            <ul id="tips-list" class="tips-list">
+              <!-- Dynamically populated -->
+            </ul>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="diagnostic-actions">
+            <button type="button" id="btn-copy-report" class="btn-secondary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+                <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+              </svg>
+              Copy Report
+            </button>
+            <button type="button" id="btn-print-report" class="btn-secondary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 6 2 18 2 18 9"/>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                <rect width="12" height="8" x="6" y="14"/>
+              </svg>
+              Print Summary
+            </button>
+          </div>
+
+        </div>
+
+      </section>
+
+    </div>
+
+    <!-- Machine Learning Architecture & Insights -->
+    <section class="info-section">
+      <div class="info-grid">
+        
+        <div class="info-card">
+          <div class="info-icon-pill">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2a10 10 0 1 0 10 10H12V2z"/>
+              <path d="M12 12 2.1 12.5"/>
+              <path d="m12 12 7.07-7.07"/>
+            </svg>
+          </div>
+          <h4>Logistic Regression Core</h4>
+          <p>Trained with optimized hyperparameter tuning on 8 physiological covariates, delivering an interpretable sigmoid decision probability boundary.</p>
+        </div>
+
+        <div class="info-card">
+          <div class="info-icon-pill" style="background: rgba(99, 102, 241, 0.15); color: var(--accent-indigo);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </div>
+          <h4>StandardScaler Normalization</h4>
+          <p>Zero-mean and unit-variance standardization preserves feature scaling across heterogeneous dimensions (e.g. Insulin vs Age).</p>
+        </div>
+
+        <div class="info-card">
+          <div class="info-icon-pill" style="background: rgba(16, 185, 129, 0.15); color: var(--status-safe);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+              <line x1="8" y1="21" x2="16" y2="21"/>
+              <line x1="12" y1="17" x2="12" y2="21"/>
+            </svg>
+          </div>
+          <h4>AWS Elastic Beanstalk Ready</h4>
+          <p>Production container-ready WSGI configuration with high-concurrency request routing and instant JSON API compatibility.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>DiaPulse AI Diagnostic Intelligence &bull; Built with Flask, Scikit-Learn &amp; AWS Elastic Beanstalk</p>
+      <p style="margin-top: 0.35rem; font-size: 0.76rem; opacity: 0.7;">For investigational and educational decision support only. Not a substitute for professional clinical medical advice.</p>
+    </footer>
+
+  </div>
+
+  <!-- Main JavaScript File -->
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>
